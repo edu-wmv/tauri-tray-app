@@ -25,6 +25,7 @@
       "targets": "all",
       "identifier": "com.tauri.dev",
       "icon": [
+        "icons/icon.ico",
         "icons/icon.png"
       ]
     },

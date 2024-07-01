@@ -2,19 +2,21 @@
 
 use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_positioner::{Position, WindowExt};
+
+#[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
+#[cfg(target_os = "windows")]
+use window_vibrancy::apply_acrylic;
 
 fn main() {
-    let quit = CustomMenuItem::new("quit", "Quit").accelerator("Cmd+Q");
+    let quit = CustomMenuItem::new("quit", "Quit").accelerator("CmdOrCtrl+Q");
 
     let system_tray_menu = SystemTrayMenu::new().add_item(quit);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_positioner::init())
-        .system_tray(SystemTray::new().with_menu(system_tray_menu).with_title("app"))
+        .system_tray(SystemTray::new().with_menu(system_tray_menu))
         .setup(|app| {
-            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-
             app.listen_global("quit", | _ | {
                 std::process::exit(0);
             });
@@ -29,6 +31,12 @@ fn main() {
                 Some(6.0)
             ).expect("Unsuported platform! Only MacOS is supported!");
             
+            #[cfg(target_os = "windows")]
+            apply_acrylic(
+                &window,
+                Some((18,18,18,125))
+            ).expect("Unsuported platform! Only Windows is supported!");
+
             Ok(())
         })
         .on_system_tray_event(|app, event| {
@@ -46,7 +54,7 @@ fn main() {
                         window.hide().unwrap();
                     } else {
                         window.show().unwrap();
-                        window.set_focus().unwrap();
+                        // window.set_focus().unwrap();
                     }
                 },
 
